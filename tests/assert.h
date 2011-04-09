@@ -1,24 +1,26 @@
-#ifndef MARISA_ASSERT_H_
-#define MARISA_ASSERT_H_
+#ifndef MARISA2_ASSERT_H_
+#define MARISA2_ASSERT_H_
 
-#include <stdio.h>
-#include <stdlib.h>
+#include <iostream>
+#include <cstdlib>
 
 #define ASSERT(cond) (void)((!!(cond)) || \
-  (printf("%d: Assertion `%s' failed.\n", __LINE__, #cond), exit(-1), 0))
+  ((std::cout << __LINE__ << ": Assertion `" << #cond << "' failed." \
+      << std::endl), std::exit(-1), 0))
 
-#define EXCEPT(code, expected_status) try { \
+#define EXCEPT(code, expected_error_code) try { \
   code; \
-  printf("%d: Exception `%s' failed.\n", __LINE__, #code); \
-  exit(-1); \
+  std::cout << __LINE__ << ": Exception `" << #code << "' failed." \
+      << std::endl; \
+  std::exit(-1); \
 } catch (const marisa::Exception &ex) { \
-  ASSERT(ex.status() == expected_status); \
+  ASSERT(ex.error_code() == expected_error_code); \
 }
 
 #define TEST_START() \
-  printf("%s:%d: %s(): ", __FILE__, __LINE__, __FUNCTION__)
+  (std::cout << __FILE__ << ":" << __LINE__ << ": " << __FUNCTION__ << "(): ")
 
 #define TEST_END() \
-  printf("ok\n")
+  (std::cout << "ok" << std::endl)
 
-#endif  // MARISA_ASSERT_H_
+#endif  // MARISA2_ASSERT_H_

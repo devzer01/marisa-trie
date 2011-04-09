@@ -8,9 +8,9 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 
-#include <fstream>
+#include <sstream>
 
-#include <marisa/io.h>
+#include <marisa/grimoire/io.h>
 
 #include "assert.h"
 
@@ -20,72 +20,65 @@ void TestFilename() {
   TEST_START();
 
   {
-    marisa::Writer writer;
+    marisa::grimoire::Writer writer;
     writer.open("io-test.dat");
-    marisa::UInt32 value = 123;
-    writer.write(value);
-    writer.write(value);
-    double values[] = { 345, 456 };
+
+    writer.write((marisa::UInt32)123);
+    writer.write((marisa::UInt32)234);
+
+    double values[] = { 3.45, 4.56 };
     writer.write(values, 2);
-    EXCEPT(writer.write(values, 1U << 30), MARISA_SIZE_ERROR);
+
+    EXCEPT(writer.write(values, MARISA_SIZE_MAX), MARISA_SIZE_ERROR);
   }
 
   {
-    marisa::Writer writer;
-    writer.open("io-test.dat", false, 4, SEEK_SET);
-    marisa::UInt32 value = 234;
-    writer.write(value);
-  }
-
-  {
-    marisa::Writer writer;
-    writer.open("io-test.dat", false, 0, SEEK_END);
-    double value = 567;
-    writer.write(value);
-  }
-
-  {
-    marisa::Reader reader;
+    marisa::grimoire::Reader reader;
     reader.open("io-test.dat");
+
     marisa::UInt32 value;
     reader.read(&value);
     ASSERT(value == 123);
     reader.read(&value);
     ASSERT(value == 234);
-    double values[3];
-    reader.read(values, 3);
-    ASSERT(values[0] == 345);
-    ASSERT(values[1] == 456);
-    ASSERT(values[2] == 567);
+
+    double values[2];
+    reader.read(values, 2);
+    ASSERT(values[0] == 3.45);
+    ASSERT(values[1] == 4.56);
+
     char byte;
     EXCEPT(reader.read(&byte), MARISA_IO_ERROR);
   }
 
   {
-    marisa::Mapper mapper;
+    marisa::grimoire::Mapper mapper;
     mapper.open("io-test.dat");
+
     marisa::UInt32 value;
     mapper.map(&value);
     ASSERT(value == 123);
     mapper.map(&value);
     ASSERT(value == 234);
+
     const double *values;
-    mapper.map(&values, 3);
-    ASSERT(values[0] == 345);
-    ASSERT(values[1] == 456);
-    ASSERT(values[2] == 567);
+    mapper.map(&values, 2);
+    ASSERT(values[0] == 3.45);
+    ASSERT(values[1] == 4.56);
+
     char byte;
     EXCEPT(mapper.map(&byte), MARISA_IO_ERROR);
   }
 
   {
-    marisa::Writer writer;
+    marisa::grimoire::Writer writer;
     writer.open("io-test.dat");
   }
 
   {
-    marisa::Reader reader;
+    marisa::grimoire::Reader reader;
     reader.open("io-test.dat");
+
     char byte;
     EXCEPT(reader.read(&byte), MARISA_IO_ERROR);
   }
@@ -106,11 +99,15 @@ void TestFd() {
     int fd = ::creat("io-test.dat", 0644);
     ASSERT(fd != -1);
 #endif  // _MSC_VER
-    marisa::Writer writer(fd);
-    marisa::UInt32 value = 345;
+    marisa::grimoire::Writer writer;
+    writer.open(fd);
+
+    marisa::UInt32 value = 234;
     writer.write(value);
-    double values[] = { 456, 567, 678 };
-    writer.write(values, 3);
+
+    double values[] = { 34.5, 67.8 };
+    writer.write(values, 2);
+
 #ifdef _MSC_VER
     ASSERT(::_close(fd) == 0);
 #else  // _MSC_VER
@@ -127,17 +124,21 @@ void TestFd() {
     int fd = ::open("io-test.dat", O_RDONLY);
     ASSERT(fd != -1);
 #endif  // _MSC_VER
-    marisa::Reader reader(fd);
+    marisa::grimoire::Reader reader;
+    reader.open(fd);
+
     marisa::UInt32 value;
     reader.read(&value);
-    ASSERT(value == 345);
-    double values[3];
-    reader.read(values, 3);
-    ASSERT(values[0] == 456);
-    ASSERT(values[1] == 567);
-    ASSERT(values[2] == 678);
+    ASSERT(value == 234);
+
+    double values[2];
+    reader.read(values, 2);
+    ASSERT(values[0] == 34.5);
+    ASSERT(values[1] == 67.8);
+
     char byte;
     EXCEPT(reader.read(&byte), MARISA_IO_ERROR);
+
 #ifdef _MSC_VER
     ASSERT(::_close(fd) == 0);
 #else  // _MSC_VER
@@ -159,11 +160,15 @@ void TestFile() {
     FILE *file = std::fopen("io-test.dat", "wb");
     ASSERT(file != NULL);
 #endif  // _MSC_VER
-    marisa::Writer writer(file);
-    marisa::UInt32 value = 345;
+    marisa::grimoire::Writer writer;
+    writer.open(file);
+
+    marisa::UInt32 value = 10;
     writer.write(value);
-    double values[3] = { 456, 567, 678 };
-    writer.write(values, 3);
+
+    double values[2] = { 0.1, 0.2 };
+    writer.write(values, 2);
+
     ASSERT(std::fclose(file) == 0);
   }
 
@@ -175,17 +180,21 @@ void TestFile() {
     FILE *file = std::fopen("io-test.dat", "rb");
     ASSERT(file != NULL);
 #endif  // _MSC_VER
-    marisa::Reader reader(file);
+    marisa::grimoire::Reader reader;
+    reader.open(file);
+
     marisa::UInt32 value;
     reader.read(&value);
-    ASSERT(value == 345);
-    double values[3];
-    reader.read(values, 3);
-    ASSERT(values[0] == 456);
-    ASSERT(values[1] == 567);
-    ASSERT(values[2] == 678);
+    ASSERT(value == 10);
+
+    double values[2];
+    reader.read(values, 2);
+    ASSERT(values[0] == 0.1);
+    ASSERT(values[1] == 0.2);
+
     char byte;
     EXCEPT(reader.read(&byte), MARISA_IO_ERROR);
+
     ASSERT(std::fclose(file) == 0);
   }
 
@@ -195,28 +204,32 @@ void TestFile() {
 void TestStream() {
   TEST_START();
 
+  std::stringstream stream;
+
   {
-    std::ofstream file("io-test.dat", std::ios::binary);
-    ASSERT(file.is_open());
-    marisa::Writer writer(&file);
-    marisa::UInt32 value = 345;
+    marisa::grimoire::Writer writer;
+    writer.open(stream);
+
+    marisa::UInt32 value = 12;
     writer.write(value);
-    double values[3] = { 456, 567, 678 };
-    writer.write(values, 3);
+
+    double values[2] = { 3.4, 5.6 };
+    writer.write(values, 2);
   }
 
   {
-    std::ifstream file("io-test.dat", std::ios::binary);
-    ASSERT(file.is_open());
-    marisa::Reader reader(&file);
+    marisa::grimoire::Reader reader;
+    reader.open(stream);
+
     marisa::UInt32 value;
     reader.read(&value);
-    ASSERT(value == 345);
-    double values[3];
-    reader.read(values, 3);
-    ASSERT(values[0] == 456);
-    ASSERT(values[1] == 567);
-    ASSERT(values[2] == 678);
+    ASSERT(value == 12);
+
+    double values[2];
+    reader.read(values, 2);
+    ASSERT(values[0] == 3.4);
+    ASSERT(values[1] == 5.6);
+
     char byte;
     EXCEPT(reader.read(&byte), MARISA_IO_ERROR);
   }
@@ -226,11 +239,14 @@ void TestStream() {
 
 }  // namespace
 
-int main() {
+int main() try {
   TestFilename();
   TestFd();
   TestFile();
   TestStream();
 
   return 0;
+} catch (const marisa::Exception &ex) {
+  std::cerr << ex.what() << std::endl;
+  throw;
 }

@@ -5,20 +5,24 @@ http://code.google.com/p/marisa-trie/
 
 - Project summary
 
-Matching Algorithms with Recursively Implemented StorAge
+MARISA: Matching Algorithm with Recursively Implemented StorAge
 
 - Version
 
-0.1.4
+0.2.0
 
 - Description
 
-This project *marisa-trie* provides a C++ library *libmarisa* and command line tools *`marisa-*`* for building and operating nesting patricia tries. The brand-new dictionary structure is designed to be static and space efficient. Also, *marisa-trie* enables not only simple lookups but also prefix searches and predictive searches.
+*Matching Algorithm with Recursively Implemented StorAge (MARISA)* is a static and space-efficient trie data structure. And *libmarisa* is a C++ library to provide an implementation of MARISA. Also, the package of *libmarisa* contains a set of command line tools for building and operating a MARISA-based dictionary.
 
- * Prefix searches are to find keys from prefixes of a given query.
- * Predictive searches are to find keys starting with a given query.
+A MARISA-based dictionary supports not only lookup but also reverse lookup, common prefix search and predictive search.
 
-The biggest advantage of *marisa-trie* is that it can build a considerably compact dictionary. See below for the size of dictionaries built with various trie implementations.
+ * Lookup is to check whether or not a given string exists in a dictionary.
+ * Reverse lookup is to restore a key from its ID.
+ * Common prefix search is to find keys from prefixes of a given string.
+ * Predictive search is to find keys starting with a given string.
+
+The biggest advantage of *libmarisa* is that its dictioanry size is considerably more compact than others. See below for the dictionary size of other implementations.
 
  * Input
   * Source: enwiki-20110115-all-titles-in-ns0.gz
@@ -29,13 +33,16 @@ The biggest advantage of *marisa-trie* is that it can build a considerably compa
 || *Implementation* || *Size (bytes)* || *Remarks*                   ||
 ||  darts-clone     ||   316,065,792  || Compacted double-array trie ||
 ||  tx-trie         ||   107,119,864  || LOUDS-based trie            ||
-|| *marisa-trie*    ||   *42,688,271* || Nesting patricia trie       ||
+|| *marisa-trie*    ||   *42,688,704* || MARISA trie                 ||
 
- * Documentation (in Japanese)
-  * HowTo
-  * ListOfTools
-  * LibraryInterface
-  * BenchmarkResults
+ * Documentation
+  * marisa-0.1.4 (Japanese)
+   * HowTo
+   * ListOfTools
+   * LibraryInterface
+   * BenchmarkResults
+  * marisa-0.2.0
+   * [http://marisa-trie.googlecode.com/svn/trunk/docs/readme.ja.html README (Japanese)]
 
 - Version control system
 
@@ -47,7 +54,6 @@ New BSD License
 
 - Project labels
 
-Nesting
 Patricia
 Trie
 Static
